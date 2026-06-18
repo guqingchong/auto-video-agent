@@ -1,0 +1,143 @@
+{
+  "project": "auto-video-agent",
+  "version": "0.1.0",
+  "schema_version": 1,
+  "generated_by": "Hermes",
+  "generation_date": "2026-06-19",
+  "features": [
+    {
+      "id": "F001",
+      "title": "调研引擎",
+      "description": "爬取热点话题（抖音热搜/微博热搜/知乎热榜），分析趋势，输出结构化选题池",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "complex",
+      "dependencies": [],
+      "wave": 1,
+      "max_token_budget": 80000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "能从至少2个平台抓取热搜数据", "payload": "pytest tests/test_research_engine.py -v"},
+        {"type": "command", "description": "输出结构化选题池JSON", "payload": "python -c 'from src.research import ResearchEngine; r = ResearchEngine(); print(r.fetch_trending()[:3])'"}
+      ]
+    },
+    {
+      "id": "F002",
+      "title": "选题决策引擎",
+      "description": "AI评估选题价值（流量潜力/竞争度/可行性），自动选出最优选题",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "medium",
+      "dependencies": ["F001"],
+      "wave": 1,
+      "max_token_budget": 50000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "能对选题池评分并选出TOP1", "payload": "pytest tests/test_topic_selector.py -v"},
+        {"type": "command", "description": "输出选定选题及评分理由", "payload": "python -c 'from src.topic_selector import TopicSelector; t = TopicSelector(); print(t.select_best([{\"title\":\"test\",\"score\":8}]))'"}
+      ]
+    },
+    {
+      "id": "F003",
+      "title": "脚本写作引擎",
+      "description": "根据选题生成分段式口播脚本（开头hook/正文/结尾CTA），支持风格模板",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "medium",
+      "dependencies": ["F002"],
+      "wave": 2,
+      "max_token_budget": 50000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "生成的脚本包含hook/正文/CTA三段", "payload": "pytest tests/test_script_writer.py -v"},
+        {"type": "command", "description": "输出完整脚本", "payload": "python -c 'from src.script_writer import ScriptWriter; s = ScriptWriter(); print(s.write(\"AI改变生活\"))'"}
+      ]
+    },
+    {
+      "id": "F004",
+      "title": "分镜规划器",
+      "description": "脚本→分镜描述（画面描述/时长/转场/字幕/BGM标记）",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "medium",
+      "dependencies": ["F003"],
+      "wave": 2,
+      "max_token_budget": 50000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "每个分镜包含画面/时长/转场字段", "payload": "pytest tests/test_storyboard.py -v"}
+      ]
+    },
+    {
+      "id": "F005",
+      "title": "TTS语音合成",
+      "description": "调用TTS API将脚本转为语音（Edge TTS免费方案 或 付费高质量方案）",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "medium",
+      "dependencies": ["F003"],
+      "wave": 3,
+      "max_token_budget": 50000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "TTS输出wav/mp3文件", "payload": "pytest tests/test_tts.py -v"},
+        {"type": "command", "description": "生成音频文件且时长>0", "payload": "python -c 'from src.tts import TTSEngine; t = TTSEngine(); path = t.synthesize(\"测试文本\"); import os; print(f\"File: {path}, Size: {os.path.getsize(path)}\")'"}
+      ]
+    },
+    {
+      "id": "F006",
+      "title": "数字人视频生成（HeyGen/D-ID）",
+      "description": "调用HeyGen或D-ID API，输入语音+形象，生成数字人口播视频",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "complex",
+      "dependencies": ["F005"],
+      "wave": 3,
+      "max_token_budget": 80000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "API调用Mock测试通过", "payload": "pytest tests/test_digital_human.py -v"},
+        {"type": "command", "description": "数字人模块可导入", "payload": "python -c 'from src.digital_human import DigitalHumanEngine; print(\"DigitalHumanEngine importable\")'"}
+      ]
+    },
+    {
+      "id": "F007",
+      "title": "视频剪辑合成",
+      "description": "FFmpeg编排：数字人视频+字幕+BGM+转场，合成最终视频",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "complex",
+      "dependencies": ["F006"],
+      "wave": 4,
+      "max_token_budget": 80000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "合成视频文件存在且时长正确", "payload": "pytest tests/test_video_composer.py -v"},
+        {"type": "command", "description": "FFmpeg可用", "payload": "ffmpeg -version 2>&1 | head -1"}
+      ]
+    },
+    {
+      "id": "F008",
+      "title": "抖音发布",
+      "description": "通过抖音开放平台API发布视频，支持标题/标签/封面设置",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "complex",
+      "dependencies": ["F007"],
+      "wave": 4,
+      "max_token_budget": 80000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "发布API Mock测试通过", "payload": "pytest tests/test_publisher.py -v"},
+        {"type": "command", "description": "发布模块可导入", "payload": "python -c 'from src.publisher import DouyinPublisher; print(\"DouyinPublisher importable\")'"}
+      ]
+    },
+    {
+      "id": "F009",
+      "title": "全流程编排引擎",
+      "description": "状态机驱动的全流程编排：调研→选题→脚本→分镜→TTS→数字人→合成→发布。失败重试、断点续跑",
+      "status": "pending",
+      "owner_agent": "claude",
+      "estimated_complexity": "complex",
+      "dependencies": ["F001","F002","F003","F004","F005","F006","F007","F008"],
+      "wave": 5,
+      "max_token_budget": 100000,
+      "acceptance_criteria": [
+        {"type": "test", "description": "全流程状态机测试通过", "payload": "pytest tests/test_orchestrator.py -v"},
+        {"type": "command", "description": "能从断点恢复", "payload": "python -c 'from src.orchestrator import Orchestrator; o = Orchestrator(); print(o.resume_from(\"script_done\"))'"}
+      ]
+    }
+  ]
+}
